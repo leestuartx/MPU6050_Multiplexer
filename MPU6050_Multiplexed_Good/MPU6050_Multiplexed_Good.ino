@@ -35,7 +35,7 @@ MPU6050 mpu;
 // FOUND IMU SENSORS
 //=========================
 bool foundIMU[8] = {false};
-
+unsigned long timer = 0;
 
 void tcaselect(uint8_t i) {
     if (i > 7) 
@@ -87,7 +87,7 @@ void setup()
 
 
     
-    InitMPU(3);
+ 
 
     // Check settings
    // checkSettings();
@@ -177,25 +177,51 @@ void checkSettings()
     Serial.println();
 }
 
+float timeStep = 0.01;
+float pitch = 0;
+float roll = 0;
+float yaw = 0;
+
+
 
 //Displays the gyro data per gyro
 void DisplayGyroData(uint8_t gyroID)
 {
     tcaselect(gyroID);
+
+  // Read normalized values
+  Vector norm = mpu.readNormalizeGyro();
+
+  // Calculate Pitch, Roll and Yaw
+  pitch = pitch + norm.YAxis * timeStep;
+  roll = roll + norm.XAxis * timeStep;
+  yaw = yaw + norm.ZAxis * timeStep;
+
+  // Output raw
+
+  Serial.print(pitch);
+  Serial.print(" ,");
+  Serial.print(roll);  
+  Serial.print(" ,");
+  Serial.print(yaw);
+  
+  Serial.println(" ; ");
+
+    /*
     Vector rawGyro = mpu.readRawGyro();
     Vector normGyro = mpu.readNormalizeGyro();
 
     
-    Serial.print(" Gyro : ");
+    Serial.print("Gyro");
     Serial.print(gyroID);
-
+    Serial.print(":");
     
-    Serial.print(" Xraw = ");
     Serial.print(rawGyro.XAxis);
-    Serial.print(" Yraw = ");
+    Serial.print(",");
     Serial.print(rawGyro.YAxis);
-    Serial.print(" Zraw = ");
+    Serial.print(",");
     Serial.println(rawGyro.ZAxis);
+    */
     /*
     Serial.print(" Xnorm = ");
     Serial.print(normGyro.XAxis);
@@ -203,6 +229,8 @@ void DisplayGyroData(uint8_t gyroID)
     Serial.print(normGyro.YAxis);
     Serial.print(" Znorm = ");
     Serial.println(normGyro.ZAxis);*/
+    // Wait to full timeStep period
+  //delay((timeStep*1000) - (millis() - timer));
 }
 
 void loop() 
@@ -222,5 +250,5 @@ void loop()
 
  // Serial.println("Update");
 
-    delay(10);
+   // delay(100);
 }
