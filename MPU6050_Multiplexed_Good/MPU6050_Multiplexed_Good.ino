@@ -20,8 +20,8 @@ extern "C" {
     #include "utility/twi.h"  // from Wire library, so we can do bus scanning
 }
 
-
-#include "MPU6050\MPU6050.h"
+#include "MPU6050.h"
+//#include "MPU6050\MPU6050.h"
 
 
 
@@ -30,6 +30,12 @@ extern "C" {
 
 
 MPU6050 mpu;
+
+//=========================
+// FOUND IMU SENSORS
+//=========================
+bool foundIMU[8] = {false};
+
 
 void tcaselect(uint8_t i) {
     if (i > 7) 
@@ -40,7 +46,6 @@ void tcaselect(uint8_t i) {
     Wire.endTransmission();  
 }
 
-
 // standard Arduino setup()
 void setup()
 {
@@ -48,16 +53,44 @@ void setup()
     delay(1000);
 
     Wire.begin();
-
+    Serial.println("\nTCAScanner ready!");
     Serial.begin(115200);
     Serial.println("\nTCAScanner ready!");
-  //  IdentifyIMU_Addresses();
+    //IdentifyIMU_Addresses();
    
-    InitMPU(2);
+
+    for (uint8_t t=0; t<8; t++) {
+        tcaselect(t);
+        Serial.print("TCA Port #"); Serial.println(t);
+
+        for (uint8_t addr = 0; addr<=127; addr++) {
+            if (addr == TCAADDR) continue;
+
+            uint8_t data;
+            if (! twi_writeTo(addr, &data, 0, 1, 1)) {
+                Serial.print("Found I2C 0x");  Serial.println(addr,HEX);
+                
+                //Initialize MPU
+                InitMPU(t);
+                foundIMU[t] = true;
+            }
+           // else
+           // {
+              //Set the IMU Address as disabled
+           //   foundIMU[t]=false;
+            
+          //  }
+        }
+    }
+    Serial.println("\ndone");
+
+
+
+    
     InitMPU(3);
 
     // Check settings
-    checkSettings();
+   // checkSettings();
 }
 
 
@@ -174,11 +207,20 @@ void DisplayGyroData(uint8_t gyroID)
 
 void loop() 
 {
-    DisplayGyroData(2);
-    DisplayGyroData(3);
-    
 
+   // DisplayGyroData(2);
+  //  DisplayGyroData(3);
+    for (int i = 0; i < 8;  i++)
+    {
+     //   Serial.print(foundIMU[i]);
+        if (foundIMU[i] == true)
+        {
+            DisplayGyroData(i);
+    //        Serial.println("Update :" + i );
+        }
+    }
 
+ // Serial.println("Update");
 
     delay(10);
 }

@@ -85,4 +85,6 @@ extern "C" void __cxa_pure_virtual() {;}
 #define portInputRegister(P)
 #define portModeRegister(P)
 #include <..\MPU6050_Multiplexed_Good\MPU6050_Multiplexed_Good.ino>
+#include <..\MPU6050_Multiplexed_Good\MPU6050.cpp>
+#include <..\MPU6050_Multiplexed_Good\MPU6050.h>
 #endif
